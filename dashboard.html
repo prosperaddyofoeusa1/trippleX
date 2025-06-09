@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoNet - Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <style>
+    /* ===== Loading System ===== */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0d1117;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    .loading-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .loading-animation {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin-bottom: 30px;
+    }
+    .loading-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    .loading-spinner {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      width: 140px;
+      height: 140px;
+      border: 3px solid rgba(0, 150, 255, 0.1);
+      border-radius: 50%;
+      border-top-color: #0096FF;
+      animation: spin 1s linear infinite;
+    }
+    .loading-progress-container {
+      width: 200px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .loading-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #0096FF, #00BFFF);
+      transition: width 0.4s ease;
+    }
+    .loading-text {
+      color: #bbb;
+      font-size: 14px;
+      margin-top: 20px;
+      text-align: center;
+      max-width: 80%;
+    }
+    .content-wrapper {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .page-loaded .content-wrapper {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.9; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.9; }
+    }
+
+    /* ===== Global Styles ===== */
+    :root {
+      --primary: #0096FF;
+      --secondary: #00BFFF;
+      --background: #0d1117;
+      --surface: #1f2633;
+      --surface-light: #2b3242;
+      --border: #3a4556;
+      --success: #00ff7f;
+      --danger: #ff4d4d;
+      --warning: #FFA500;
+      --info: #00BFFF;
+      --text-primary: #ffffff;
+      --text-secondary: #bbbbbb;
+      --shadow: 0 4px 20px rgba(0, 150, 255, 0.15);
+      --transition: all 0.3s ease;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--background);
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--text-primary);
+    }
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    /* ===== Header Styles ===== */
+    header {
+      width: 100%;
+      padding: 20px 40px;
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      position: fixed;
+      top: 0;
+      z-index: 20;
+    }
+    .menu-toggle {
+      font-size: 26px;
+      cursor: pointer;
+      display: none;
+    }
+    #menu {
+      background: var(--surface);
+      padding: 150px 20px 20px 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 210px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      z-index: 10;
+    }
+    #menu a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 18px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      transition: var(--transition);
+    }
+    #menu a:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* ===== Notification Badge ===== */
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--danger);
+      color: white;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      z-index: 5;
+      animation: pulse 1.5s infinite;
+    }
+
+    /* ===== Dashboard Styles ===== */
+    .dashboard {
+      margin-top: 120px;
+      text-align: center;
+      width: 90%;
+      max-width: 700px;
+      padding: 20px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .profile-section {
+      margin-bottom: 20px;
+    }
+    .balance-section {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    #balance {
+      font-size: 40px;
+      font-weight: 800;
+      margin-top: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    .buttons button {
+      padding: 10px 25px;
+      border: none;
+      border-radius: 25px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .buttons button:hover {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      transform: scale(1.05);
+    }
+    .toggle-balance {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-top: 10px;
+    }
+    .toggle-balance:hover {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+    }
+
+    /* ===== Asset Cards ===== */
+    .assets {
+      width: 100%;
+      margin-top: 20px;
+    }
+    .asset-card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 6px 20px rgba(0,150,255,0.5);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .asset-card:hover {
+      transform: translateY(-5px);
+      background: var(--surface-light);
+    }
+    .asset-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+    .asset-logo {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      margin-right: 12px;
+    }
+    .asset-top h4 {
+      margin: 0;
+      font-size: 20px;
+    }
+    .asset-top p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .convert-button {
+      align-self: flex-start;
+      padding: 8px 18px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 20px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .convert-button:hover {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+    }
+    .change {
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .change.up { color: var(--success); }
+    .change.down { color: var(--danger); }
+
+    /* ===== Logout Button ===== */
+    .logout-btn {
+      background: rgba(255, 77, 77, 0.1);
+      border: 1px solid rgba(255, 77, 77, 0.3);
+      color: var(--danger);
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px 20px;
+      border-radius: 25px;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .logout-btn:hover {
+      background: rgba(255, 77, 77, 0.2);
+    }
+
+    /* ===== Footer Navigation ===== */
+    .footer-nav {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--surface);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 20px 0;
+      position: fixed;
+      border-radius: 10px;
+      left: 0;
+      right: 0;
+      bottom: 20px;
+      box-shadow: 0 -4px 10px rgba(0,0,0,0.5);
+      z-index: 5;
+    }
+    .footer-nav a {
+      text-align: center;
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+    }
+    .footer-nav img {
+      width: 30px;
+      height: 30px;
+      margin-bottom: 5px;
+    }
+    .footer-nav .trade {
+      text-align: center;
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .trade-simple {
+      padding: 12px 30px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 10px rgba(0,150,255,0.4);
+    }
+    .trade-simple:hover {
+      background: linear-gradient(135deg, #0080FF, #00A5FF);
+      box-shadow: 0 6px 15px rgba(0,150,255,0.6);
+    }
+    .trade-simple:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 5px rgba(0,150,255,0.4);
+    }
+
+    /* ===== Responsive Design ===== */
+    @media (max-width: 768px) {
+      .menu-toggle { display: block; }
+      #menu {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      #menu.show {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      .footer-nav {
+        width: 100%;
+        max-width: none;
+        justify-content: space-around;
+        padding: 10px 0;
+      }
+    }
+  </style>
+</head>
+<body onclick="closeMenuOutside(event)">
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-animation">
+      <img src="./images/logo.png" alt="Loading" class="loading-logo">
+      <div class="loading-spinner"></div>
+    </div>
+    <div class="loading-progress-container">
+      <div class="loading-progress-bar" id="loadingProgress"></div>
+    </div>
+    <div class="loading-text" id="loadingText">Initializing application...</div>
+  </div>
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper" id="contentWrapper">
+    <div id="particles-js"></div>
+
+    <!-- Header -->
+    <header>
+      <div class="menu-toggle" onclick="toggleMenu(event)">&#9776;</div>
+      <div style="display: flex; justify-content: center; align-items: center; height: 100px;">
+        <img src="./images/logo.png" alt="CryptoNet Logo" style="height: 120px; margin-right: 70px;">
+      </div>
+      <div></div>
+    </header>
+
+    <!-- Logout Button -->
+    <div style="position: fixed; top: 20px; right: 20px; z-index: 100;">
+      <button onclick="logout()" class="logout-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        Logout
+      </button>
+    </div>
+
+    <!-- Menu -->
+    <div id="menu">
+      <a href="./profile.html">Profile Overview</a>
+      <a href="./activities.html">Recent Activity</a>
+      <a href="./settings.html">Settings</a>
+      <a href="./pns.html">Privacy & Security</a>
+      <a href="./kyc.html">KYC Verification</a>
+      <a href="./referral.html">Referral Program</a>
+      <a href="./contact.html">Contact Support</a>
+      <a href="./terms.html">Terms & Conditions</a>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard">
+      <div class="profile-section">
+        <h3>Dashboard</h3>
+        <p><h1>Welcome, <span id="username">User</span></h1></p>
+      </div>
+
+      <div class="balance-section">
+        <p>Total Balance</p>
+        <div id="balance">$0</div>
+      </div>
+      
+      <div class="buttons">
+        <button onclick="window.location.href='deposit.html'">Deposit</button>
+        <button onclick="window.location.href='Withdraw.html'">Withdraw</button>
+      </div>
+
+      <div class="asset-card">
+        <div class="asset-top">
+          <img src="./images/tether-logo.webp" alt="USDT" class="asset-logo">
+          <div>
+            <h4>USDT - Tether</h4>
+            <p>Available: <span id="usdt-available">1050</span> USDT | Freeze: 0</p>
+          </div>
+          <div class="change up">+0.1%</div>
+        </div>
+      </div>
+      
+      <div class="assets">
+        <div class="asset-card" data-coin="BTC">
+          <div class="asset-top">
+            <img src="./images/Bitcoin-Logo.png" alt="BTC" class="asset-logo">
+            <div>
+              <h4>BTC - Bitcoin</h4>
+              <p>Available: <span class="coin-available">0.234</span> BTC | Freeze: 0.001 BTC</p>
+            </div>
+            <div class="change up">+2.5%</div>
+          </div>
+          <button class="convert-button" onclick="convertToUSDT('BTC', this)">Convert to USDT</button>
+        </div>
+
+        <div class="asset-card" data-coin="ETH">
+          <div class="asset-top">
+            <img src="./images/ethereum-logo.png" alt="ETH" class="asset-logo">
+            <div>
+              <h4>ETH - Ethereum</h4>
+              <p>Available: <span class="coin-available">1.5</span> ETH | Freeze: 0.01 ETH</p>
+            </div>
+            <div class="change down">-1.2%</div>
+          </div>
+          <button class="convert-button" onclick="convertToUSDT('ETH', this)">Convert to USDT</button>
+        </div>
+
+        <div class="asset-card" data-coin="TRX">
+          <div class="asset-top">
+            <img src="./images/trx.png" alt="TRX" class="asset-logo">
+            <div>
+              <h4>TRX - Tron</h4>
+              <p>Available: <span class="coin-available">5000</span> TRX | Freeze: 0</p>
+            </div>
+            <div class="change up">+3.7%</div>
+          </div>
+          <button class="convert-button" onclick="convertToUSDT('TRX', this)">Convert to USDT</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer Navigation -->
+    <div class="footer-nav">
+      <a href="./trade.html">
+        <button class="trade-simple">Trade</button>
+      </a>
+      <a href="./market.html">
+        <div style="background: var(--surface); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#e74f4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 17l6-6 4 4 8-8" />
+            <circle cx="3" cy="17" r="1.5" fill="#00BFFF"/>
+            <circle cx="9" cy="11" r="1.5" fill="#00BFFF"/>
+            <circle cx="13" cy="15" r="1.5" fill="#00BFFF"/>
+            <circle cx="21" cy="7" r="1.5" fill="#e74f4f"/>
+          </svg>
+        </div>
+      </a>
+      <a href="./mining.html" class="trade">
+        <img src="./images/gear.png" alt="Mining Machine">
+      </a>
+      <a href="./notification.html" style="position: relative;">
+        <div style="background: var(--surface); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+        </div>
+        <div class="notification-badge" id="footerNotificationBadge" style="display: none;"></div>
+      </a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    // ===== Constants =====
+    const USER_SESSION_KEY = 'cryptonet-user-session';
+    const ASSETS_DATA_KEY = 'cryptonet-user-assets';
+    const NOTIFICATIONS_KEY = 'cryptonet-notifications';
+    const ADMIN_MESSAGES_KEY = 'cryptonet-admin-messages';
+
+    // ===== Loading System =====
+    class LoadingSystem {
+      constructor() {
+        this.minLoadingTime = 1500;
+        this.maxLoadingTime = 3000;
+        this.startTime = null;
+        this.loadingPhases = [
+          { progress: 20, text: "Loading security modules..." },
+          { progress: 40, text: "Initializing wallet services..." },
+          { progress: 60, text: "Syncing with blockchain..." },
+          { progress: 80, text: "Finalizing setup..." },
+          { progress: 95, text: "Ready to go!" }
+        ];
+      }
+
+      init() {
+        this.startTime = Date.now();
+        this.setupLoadingBar();
+        this.setupEventListeners();
+        this.simulateLoading();
+      }
+
+      setupLoadingBar() {
+        const progressBar = document.getElementById('loadingProgress');
+        progressBar.style.transition = `width ${this.minLoadingTime/1000}s ease`;
+      }
+
+      setupEventListeners() {
+        window.addEventListener('load', () => this.completeLoading());
+        // Ensure loading completes even if assets fail to load
+        setTimeout(() => this.completeLoading(), this.maxLoadingTime);
+      }
+
+      simulateLoading() {
+        let currentPhase = 0;
+        const phaseInterval = setInterval(() => {
+          if (currentPhase >= this.loadingPhases.length) {
+            clearInterval(phaseInterval);
+            return;
+          }
+          const phase = this.loadingPhases[currentPhase];
+          this.updateProgress(phase.progress, phase.text);
+          currentPhase++;
+        }, this.minLoadingTime / this.loadingPhases.length);
+      }
+
+      updateProgress(percent, text) {
+        document.getElementById('loadingProgress').style.width = `${percent}%`;
+        if (text) document.getElementById('loadingText').textContent = text;
+      }
+
+      completeLoading() {
+        const elapsed = Date.now() - this.startTime;
+        const remainingTime = Math.max(0, this.minLoadingTime - elapsed);
+        
+        setTimeout(() => {
+          this.updateProgress(100, "Ready!");
+          setTimeout(() => {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            document.body.classList.add('page-loaded');
+            document.querySelectorAll('button, a, input').forEach(el => {
+              el.style.pointerEvents = 'auto';
+            });
+          }, 300);
+        }, remainingTime);
+      }
+    }
+
+    // ===== Notification System =====
+    class NotificationSystem {
+      static initialize() {
+        // Initialize notifications if not exists
+        if (!localStorage.getItem(NOTIFICATIONS_KEY)) {
+          const defaultNotifications = [
+            {
+              id: Date.now(),
+              type: 'welcome',
+              title: 'Welcome to CryptoNet',
+              message: 'Thank you for joining CryptoNet. Start trading now!',
+              time: new Date().toISOString(),
+              read: false,
+              icon: 'bi-emoji-smile'
+            }
+          ];
+          localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(defaultNotifications));
+        }
+
+        // Check for admin messages
+        this.checkAdminMessages();
+        this.updateNotificationBadge();
+        
+        // Setup storage listener
+        window.addEventListener('storage', (e) => {
+          if (e.key === NOTIFICATIONS_KEY) {
+            this.updateNotificationBadge();
+          }
+        });
+      }
+
+      static checkAdminMessages() {
+        // Check for new admin messages (simulated)
+        const lastMessageTime = localStorage.getItem('lastAdminMessageTime') || 0;
+        const currentTime = Date.now();
+        
+        if (currentTime - lastMessageTime > 86400000) { // 24 hours
+          const messages = JSON.parse(localStorage.getItem(ADMIN_MESSAGES_KEY)) || [];
+          const newMessage = {
+            id: Date.now(),
+            type: 'admin',
+            title: 'System Update',
+            message: 'We are performing scheduled maintenance tonight at 2 AM UTC.',
+            time: new Date().toISOString(),
+            read: false,
+            icon: 'bi-megaphone'
+          };
+          messages.push(newMessage);
+          localStorage.setItem(ADMIN_MESSAGES_KEY, JSON.stringify(messages));
+          localStorage.setItem('lastAdminMessageTime', currentTime);
+          
+          // Add to notifications
+          this.addNotification(newMessage);
+        }
+      }
+
+      static addNotification(notification) {
+        const notifications = JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY));
+        notifications.unshift(notification);
+        localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+        this.updateNotificationBadge();
+      }
+
+      static updateNotificationBadge() {
+        const notifications = JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY));
+        const unreadCount = notifications.filter(n => !n.read).length;
+        const badge = document.getElementById('footerNotificationBadge');
+        
+        if (unreadCount > 0) {
+          badge.style.display = 'flex';
+          badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+
+      static markAllAsRead() {
+        const notifications = JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY));
+        notifications.forEach(n => n.read = true);
+        localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+        this.updateNotificationBadge();
+      }
+
+      static getNotifications() {
+        return JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY));
+      }
+    }
+
+    // ===== User Session Management =====
+    class UserSession {
+      static checkAuth() {
+        const session = JSON.parse(localStorage.getItem(USER_SESSION_KEY));
+        if (!session || !session.loggedIn) {
+          window.location.href = 'login.html';
+          return null;
+        }
+        return session;
+      }
+
+      static logout() {
+        const session = JSON.parse(localStorage.getItem(USER_SESSION_KEY));
+        if (session) {
+          session.loggedIn = false;
+          localStorage.setItem(USER_SESSION_KEY, JSON.stringify(session));
+        }
+        window.location.href = 'login.html';
+      }
+
+      static updateUsernameDisplay() {
+        const session = this.checkAuth();
+        if (!session) return;
+        
+        const username = session.username || 'User';
+        document.getElementById('username').innerHTML = `
+            <span style="
+                color: var(--primary);
+                font-weight: 700;
+                text-shadow: 0 0 10px rgba(0, 150, 255, 0.5);
+                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                padding: 0 5px;
+                border-radius: 5px;
+            ">${username}</span>
+        `;
+      }
+    }
+
+    // ===== Asset Management =====
+    class AssetManager {
+      static assets = {
+        USDT: { available: 1050, price: 1 },
+        BTC: { available: 0.234, price: 0 },
+        ETH: { available: 1.5, price: 0 },
+        TRX: { available: 5000, price: 0 }
+      };
+
+      static loadAssets() {
+        const savedAssets = localStorage.getItem(ASSETS_DATA_KEY);
+        if (savedAssets) {
+          this.assets = JSON.parse(savedAssets);
+        }
+        this.updateBalances();
+      }
+
+      static saveAssets() {
+        localStorage.setItem(ASSETS_DATA_KEY, JSON.stringify(this.assets));
+      }
+
+      static async updatePrices() {
+        try {
+          const res = await axios.get(
+            'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,tron&vs_currencies=usd',
+            { timeout: 5000 } // 5 second timeout
+          );
+          
+          this.assets.BTC.price = res.data.bitcoin.usd;
+          this.assets.ETH.price = res.data.ethereum.usd;
+          this.assets.TRX.price = res.data.tron.usd;
+          
+          this.updateBalances();
+        } catch (error) {
+          console.error('Price update failed:', error);
+          // Use cached prices if API fails
+          this.updateBalances();
+        }
+      }
+
+      static updateBalances() {
+        const totalBalance = Object.values(this.assets).reduce((total, asset) => 
+          total + (asset.available * asset.price), 0
+        );
+        document.getElementById('balance').textContent = `$${totalBalance.toFixed(2)}`;
+
+        document.querySelectorAll('[data-coin]').forEach(card => {
+          const coin = card.dataset.coin;
+          const available = this.assets[coin].available;
+          card.querySelector('.coin-available').textContent = 
+            coin === 'TRX' ? available.toFixed(0) : available.toFixed(8);
+        });
+
+        document.getElementById('usdt-available').textContent = 
+          this.assets.USDT.available.toFixed(2);
+
+        this.saveAssets();
+      }
+
+      static async convertToUSDT(coin, button) {
+        try {
+          const amount = this.assets[coin].available;
+          if(amount <= 0) return;
+          
+          const conversionValue = amount * this.assets[coin].price;
+          this.assets[coin].available = 0;
+          this.assets.USDT.available += conversionValue;
+          
+          button.style.opacity = '0.5';
+          setTimeout(() => {
+            button.style.opacity = '1';
+          }, 500);
+          
+          // Add trade notification
+          NotificationSystem.addNotification({
+            id: Date.now(),
+            type: 'trade',
+            title: 'Conversion Completed',
+            message: `Converted ${amount} ${coin} to $${conversionValue.toFixed(2)} USDT`,
+            time: new Date().toISOString(),
+            read: false,
+            icon: 'bi-arrow-repeat'
+          });
+          
+          this.updateBalances();
+        } catch (error) {
+          console.error('Conversion failed:', error);
+        }
+      }
+    }
+
+    // ===== UI Functions =====
+    function toggleMenu(event) {
+      event.stopPropagation();
+      const menu = document.getElementById('menu');
+      menu.classList.toggle('show');
+    }
+
+    function closeMenuOutside(event) {
+      const menu = document.getElementById('menu');
+      if (!event.target.closest('#menu') && !event.target.closest('.menu-toggle') && window.innerWidth <= 768) {
+        menu.classList.remove('show');
+      }
+    }
+
+    function navigateWithTransition(url) {
+      document.body.classList.remove('page-loaded');
+      document.getElementById('loadingOverlay').classList.remove('hidden');
+      document.getElementById('loadingProgress').style.width = '0%';
+      new LoadingSystem().init();
+      setTimeout(() => {
+        window.location.href = url;
+      }, 300);
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+
+  if (token) {
+    try {
+      const response = await fetch(`/api/validate-token.php?token=${token}`);
+      const result = await response.json();
+
+      if (result.success && result.user) {
+        localStorage.setItem('user_session', JSON.stringify(result.user));
+        history.replaceState(null, '', 'dashboard.html'); // clean URL
+      } else {
+        alert('Invalid or expired token.');
+        window.location.href = 'login.html';
+      }
+    } catch (err) {
+      console.error(err);
+      window.location.href = 'login.html';
+    }
+  }
+
+  // Load user session from localStorage
+  const session = JSON.parse(localStorage.getItem('user_session') || '{}');
+  if (!session.username) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  document.getElementById('username').textContent = session.username;
+  // continue loading dashboard...
+});
+
+
+
+    // Global functions for HTML onclick handlers
+    window.logout = UserSession.logout;
+    window.convertToUSDT = (coin, button) => AssetManager.convertToUSDT(coin, button);
+  </script>
+</body>
+</html>

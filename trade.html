@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoNet - Live Trading</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <style>
+    
+    /* ===== Loading System ===== */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0d1117;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+.loading-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loading-animation {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 30px;
+}
+
+.loading-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loading-spinner {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 140px;
+  height: 140px;
+  border: 3px solid rgba(0, 150, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: #0096FF;
+  animation: spin 2s linear infinite;
+}
+
+.loading-progress-container {
+  width: 200px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.loading-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #0096FF, #00BFFF);
+  transition: width 0.4s ease;
+}
+
+.loading-text {
+  color: #bbb;
+  font-size: 14px;
+  margin-top: 20px;
+  text-align: center;
+  max-width: 80%;
+}
+
+/* Animation for content after load */
+.content-wrapper {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.page-loaded .content-wrapper {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.9; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.9; }
+}
+        :root {
+            --primary: #0096FF;
+            --secondary: #00BFFF;
+            --background: #0d1117;
+            --surface: #1f2633;
+            --border: #2b3242;
+            --success: #00ff7f;
+            --danger: #ff4d4d;
+            --color-green: #00ff7f;
+            --color-red: #ff4d4d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .trading-header {
+            padding: 1rem 2rem;
+            background: var(--surface);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 8px;
+            padding: 0.8rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,150,255,0.3);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-container img {
+            height: 40px;
+        }
+
+        .balance-display {
+            font-weight: 600;
+            font-size: 1.1rem;
+            background: rgba(0, 150, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+        }
+
+        .contract-header {
+            text-align: center;
+            margin: 100px auto 20px;
+            padding: 1rem;
+            max-width: 400px;
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .contract-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 80%;
+        }
+
+        .contract-dropdown {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .contract-dropdown:hover {
+            color: var(--secondary);
+        }
+
+        .contract-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-radius: 0 0 12px 12px;
+            padding: 0.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .contract-options.show {
+            display: block;
+        }
+
+        .contract-option {
+            padding: 0.75rem;
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .contract-option:last-child {
+            border-bottom: none;
+        }
+
+        .contract-option:hover {
+            background: rgba(0, 150, 255, 0.1);
+        }
+
+        .contract-pair {
+            font-weight: 500;
+        }
+
+        .contract-price {
+            font-weight: 600;
+        }
+
+        .contract-change {
+            font-weight: 500;
+        }
+
+        .contract-change.positive {
+            color: var(--success);
+        }
+
+        .contract-change.negative {
+            color: var(--danger);
+        }
+
+        .recent-trades-icon {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--surface);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .recent-trades-icon:hover {
+            background: rgba(0, 150, 255, 0.1);
+        }
+
+        .recent-trades-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--primary);
+        }
+
+        .recent-trades-panel {
+            position: fixed;
+            top: 140px;
+            right: 20px;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1rem;
+            width: 280px;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            z-index: 998;
+            border: 1px solid var(--border);
+            display: none;
+        }
+
+        .recent-trades-panel.show {
+            display: block;
+        }
+
+        .trade-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .trade-item:last-child {
+            border-bottom: none;
+        }
+
+        .trade-type {
+            font-weight: 600;
+        }
+
+        .trade-type.buy {
+            color: var(--success);
+        }
+
+        .trade-type.sell {
+            color: var(--danger);
+        }
+
+        .trade-amount {
+            color: #bbb;
+            font-size: 0.85rem;
+        }
+
+        .trade-time {
+            color: #777;
+            font-size: 0.75rem;
+        }
+
+        .trading-container {
+            padding: 120px 2rem 150px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .chart-wrapper {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        #tradingview {
+            width: 100%;
+            height: 600px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .trading-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .trade-button {
+            padding: 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin: 0.5rem 0;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .trade-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, 
+                transparent, 
+                rgba(255,255,255,0.1), 
+                transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+        }
+
+        .trade-button:hover::after {
+            animation: shine 1.5s;
+        }
+
+        .buy-up {
+            background: linear-gradient(135deg, var(--success), #00cc66);
+            color: var(--background);
+        }
+
+        .buy-down {
+            background: linear-gradient(135deg, var(--danger), #cc0000);
+            color: white;
+        }
+
+        .market-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .data-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .data-label {
+            color: #bbb;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .data-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .success {
+            color: var(--success);
+        }
+
+        .danger {
+            color: var(--danger);
+        }
+
+        .order-modal {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70vh;
+            background: var(--surface);
+            border-radius: 16px 16px 0 0;
+            z-index: 2000;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .order-modal.show {
+            transform: translateY(0);
+        }
+
+        .order-modal-header {
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .order-modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .order-modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .order-modal-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .order-section-title {
+            font-size: 0.9rem;
+            color: #bbb;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .time-options {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .time-option {
+            min-width: 80px;
+            padding: 0.75rem 0.5rem;
+            background: var(--background);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid var(--border);
+        }
+
+        .time-option.active {
+            border-color: var(--primary);
+            background: rgba(0, 150, 255, 0.1);
+        }
+
+        .time-option-title {
+            font-size: 0.8rem;
+            color: #bbb;
+        }
+
+        .time-option-value {
+            font-weight: 600;
+            margin: 0.25rem 0;
+        }
+
+        .time-option-yield {
+            font-size: 0.8rem;
+            color: var(--success);
+        }
+
+        .amount-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .amount-option {
+            padding: 0.75rem 0.5rem;
+            background: var(--background);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid var(--border);
+        }
+
+        .amount-option.active {
+            border-color: var(--primary);
+            background: rgba(0, 150, 255, 0.1);
+        }
+
+        .amount-option-value {
+            font-weight: 600;
+        }
+
+        .amount-option-label {
+            font-size: 0.7rem;
+            color: #bbb;
+        }
+
+        .custom-amount-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            margin: 0.5rem 0;
+        }
+
+        .order-summary {
+            display: flex;
+            background: var(--background);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .order-summary-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .order-summary-label {
+            font-size: 0.8rem;
+            color: #bbb;
+        }
+
+        .order-summary-value {
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        .order-summary-value.buy {
+            color: var(--success);
+        }
+
+        .order-summary-value.sell {
+            color: var(--danger);
+        }
+
+        .order-confirm-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .order-confirm-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1999;
+            display: none;
+        }
+
+        .modal-overlay.show {
+            display: block;
+        }
+
+        .countdown-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            z-index: 2100;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+
+        .countdown-modal.show {
+            display: flex;
+        }
+
+        .countdown-header {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        .countdown-pair {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .countdown-price {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .countdown-timer {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 1rem 0;
+            color: var(--primary);
+        }
+
+        .countdown-type {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--success);
+        }
+
+        .countdown-type.sell {
+            color: var(--danger);
+        }
+
+        .countdown-amount {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .countdown-confirm-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .countdown-confirm-btn:hover {
+            background: var(--secondary);
+        }
+
+        .countdown-confirm-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .footer-nav {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1f2633;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px 0;
+            position: fixed;
+            border-radius: 10px;
+            left: 0;
+            right: 0;
+            bottom: 20px;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.5);
+            z-index: 5;
+        }
+        
+        .footer-nav a {
+            text-align: center;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .footer-nav img {
+            width: 30px;
+            height: 30px;
+            margin-bottom: 5px;
+        }
+        
+        .footer-nav .trade {
+            text-align: center;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .trade-simple {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #0096FF, #00BFFF);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,150,255,0.4);
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .trade-simple:hover {
+            background: linear-gradient(135deg, #0080FF, #00A5FF);
+            box-shadow: 0 6px 15px rgba(0,150,255,0.6);
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(45deg) translateX(-150%); }
+            100% { transform: rotate(45deg) translateX(150%); }
+        }
+
+        @media (max-width: 768px) {
+            .trading-container {
+                padding: 100px 1rem 130px;
+            }
+
+            .contract-header {
+                margin: 100px 1rem 20px;
+                width: calc(100% - 2rem);
+                padding: 0.8rem;
+            }
+
+            .contract-title {
+                font-size: 1.2rem;
+            }
+
+            .recent-trades-icon {
+                top: 80px;
+                right: 10px;
+                width: 45px;
+                height: 45px;
+            }
+
+            .recent-trades-panel {
+                width: calc(100% - 40px);
+                right: 20px;
+                left: 20px;
+                top: 140px;
+                max-height: 300px;
+            }
+
+            .contract-options {
+                max-height: 300px;
+                width: 100%;
+                left: 0;
+                right: 0;
+            }
+
+            .trading-actions {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .trade-button {
+                padding: 1.2rem;
+                font-size: 1.1rem;
+                min-height: 70px;
+            }
+
+            .chart-wrapper {
+                padding: 1rem;
+            }
+
+            #tradingview {
+                height: 400px;
+            }
+
+            .back-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .footer-nav {
+                width: 100%;
+                max-width: none;
+                justify-content: space-around;
+                padding: 10px 0;
+                bottom: 0;
+                border-radius: 0;
+            }
+
+            .trade-simple {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .data-card {
+                padding: 1rem;
+            }
+
+            .data-value {
+                font-size: 1.2rem;
+            }
+
+            .balance-display {
+                font-size: 0.9rem;
+                padding: 0.4rem 0.8rem;
+            }
+
+            .order-modal {
+                height: 80vh;
+            }
+
+            .amount-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .countdown-modal {
+                padding: 1.5rem;
+            }
+
+            .countdown-header {
+                font-size: 1.3rem;
+            }
+
+            .countdown-timer {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .trading-container {
+                padding: 90px 0.5rem 120px;
+            }
+
+            .contract-header {
+                margin: 90px 0.5rem 15px;
+                width: calc(100% - 1rem);
+            }
+
+            .recent-trades-icon {
+                top: 70px;
+                right: 5px;
+                width: 40px;
+                height: 40px;
+            }
+
+            .recent-trades-panel {
+                top: 120px;
+                right: 10px;
+                left: 10px;
+                width: calc(100% - 20px);
+            }
+
+            .trade-button {
+                padding: 1rem;
+                font-size: 1rem;
+            }
+
+            .market-data {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .countdown-modal {
+                padding: 1rem;
+                width: 95%;
+            }
+
+            .countdown-header {
+                font-size: 1.1rem;
+            }
+
+            .countdown-timer {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-animation">
+    <img src="./images/logo.png" alt="Loading" class="loading-logo">
+    <div class="loading-spinner"></div>
+  </div>
+  <div class="loading-progress-container">
+    <div class="loading-progress-bar" id="loadingProgress"></div>
+  </div>
+  <div class="loading-text" id="loadingText">Initializing application...</div>
+</div>
+
+<!-- Wrap all your content in this (except loading overlay) -->
+<div class="content-wrapper" id="contentWrapper">
+  <!-- ALL YOUR EXISTING CONTENT GOES HERE -->
+</div>
+    <div id="particles-js"></div>
+
+    <!-- Header -->
+    <header class="trading-header">
+        <div class="header-left">
+            <button class="back-btn" onclick="window.location.href='dashboard.html'" aria-label="Back to dashboard">
+                ← Back
+            </button>
+            <header>
+                <div style="
+                  display: flex;
+                  justify-content: center;  /* Horizontal: center (adjust with left/right margins) */
+                  align-items: center;      /* Vertical: center (adjust with top/bottom margins) */
+                  height: 100px;           /* Container height (adjust as needed) */
+                  border: 0px dashed #ccc; /* Optional: visual guide */
+              ">
+                  <img 
+                      src="./images/logo.png" 
+                      alt="TrippleXchange Logo" 
+                      style="
+                          height: 120px;
+                          margin-left: 20px;   /* Adjust right (>0) or left (<0) */
+                          margin-right: 0px;  /* Adjust left (>0) or right (<0) */
+                          margin-top: 0px;    /* Adjust down (>0) or up (<0) */
+                          margin-bottom: 0px; /* Adjust up (>0) or down (<0) */
+                      "
+                  >
+              </div>
+                <div></div>
+              </header>
+        </div>
+        <div class="balance-display" id="balanceDisplay">$25,430.00</div>
+    </header>
+            <br><br><br>
+    <!-- Contract Header -->
+    <div class="contract-header">
+        <div class="contract-title">BTC/USDT Quick Contract</div>
+        <button class="contract-dropdown" id="contractDropdownBtn" aria-label="Select contract">▼</button>
+        <div class="contract-options" id="contractOptions">
+            <div class="contract-option" onclick="changeContract('BTC/USDT', '102877.01', '+0%')">
+                <span class="contract-pair">BTC/USDT</span>
+                <span class="contract-price">102877.01</span>
+                <span class="contract-change positive">+0%</span>
+            </div>
+            <div class="contract-option" onclick="changeContract('ETH/USDT', '2327.94', '+1.15%')">
+                <span class="contract-pair">ETH/USDT</span>
+                <span class="contract-price">2327.94</span>
+                <span class="contract-change positive">+1.15%</span>
+            </div>
+            <div class="contract-option" onclick="changeContract('EOS/USDT', '0.8625', '-0.69%')">
+                <span class="contract-pair">EOS/USDT</span>
+                <span class="contract-price">0.8625</span>
+                <span class="contract-change negative">-0.69%</span>
+            </div>
+            <div class="contract-option" onclick="changeContract('DOGE/USDT', '0.204222', '-0.04%')">
+                <span class="contract-pair">DOGE/USDT</span>
+                <span class="contract-price">0.204222</span>
+                <span class="contract-change negative">-0.04%</span>
+            </div>
+            <div class="contract-option" onclick="changeContract('BCH/USDT', '411.33', '+0.93%')">
+                <span class="contract-pair">BCH/USDT</span>
+                <span class="contract-price">411.33</span>
+                <span class="contract-change positive">+0.93%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Trades Icon -->
+    <div class="recent-trades-icon" id="recentTradesIcon" aria-label="Recent trades">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M3 12h6v6H3zm0-6h6v6H3zm6 6h6v6H9zm6-6h6v6h-6z"/>
+        </svg>
+    </div>
+
+    <!-- Recent Trades Panel -->
+    <div class="recent-trades-panel" id="recentTradesPanel">
+        <h3>Recent Trades</h3>
+        <div id="recent-trades-list">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="trading-container">
+        <!-- Market Data -->
+        <div class="market-data">
+            <div class="data-card">
+                <div class="data-label">BTC/USDT Price</div>
+                <div class="data-value" id="btcPrice">$36,500</div>
+            </div>
+            <div class="data-card">
+                <div class="data-label">24h Change</div>
+                <div class="data-value success" id="btcChange">+2.4%</div>
+            </div>
+            <div class="data-card">
+                <div class="data-label">24h Volume</div>
+                <div class="data-value">$1.2B</div>
+            </div>
+        </div>
+
+        <!-- Trading Chart -->
+        <div class="chart-wrapper">
+            <div id="tradingview"></div>
+        </div>
+
+        <!-- Trading Actions -->
+        <div class="trading-actions">
+            <button class="trade-button buy-up" onclick="showOrderModal('buy')" aria-label="Buy up">
+                BUY ▲
+            </button>
+            <button class="trade-button buy-down" onclick="showOrderModal('sell')" aria-label="Sell down">
+                SELL ▼
+            </button>
+        </div>
+    </div>
+
+    <!-- Order Confirmation Modal -->
+    <div class="modal-overlay" id="orderModalOverlay"></div>
+    <div class="order-modal" id="orderModal">
+        <div class="order-modal-header">
+            <div class="order-modal-title" id="orderModalTitle">BTC/USDT</div>
+            <button class="order-modal-close" onclick="hideOrderModal()">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        <div class="order-modal-content">
+            <div class="order-section-title">Order Type</div>
+            <div class="time-options">
+                <div class="time-option" onclick="selectTimeOption(1, '1M', 20)">
+                    <div class="time-option-title">Expiry Time</div>
+                    <div class="time-option-value">1M</div>
+                    <div class="time-option-yield">Yield 20%</div>
+                </div>
+                <div class="time-option" onclick="selectTimeOption(2, '2M', 30)">
+                    <div class="time-option-title">Expiry Time</div>
+                    <div class="time-option-value">2M</div>
+                    <div class="time-option-yield">Yield 30%</div>
+                </div>
+                <div class="time-option" onclick="selectTimeOption(3, '3M', 40)">
+                    <div class="time-option-title">Expiry Time</div>
+                    <div class="time-option-value">3M</div>
+                    <div class="time-option-yield">Yield 40%</div>
+                </div>
+                <div class="time-option" onclick="selectTimeOption(4, '5M', 50)">
+                    <div class="time-option-title">Expiry Time</div>
+                    <div class="time-option-value">5M</div>
+                    <div class="time-option-yield">Yield 50%</div>
+                </div>
+                <div class="time-option" onclick="selectTimeOption(5, '7M', 60)">
+                    <div class="time-option-title">Expiry Time</div>
+                    <div class="time-option-value">7M</div>
+                    <div class="time-option-yield">Yield 60%</div>
+                </div>
+                <div class="time-option" onclick="selectTimeOption(6, '9M', 70)">
+                    <div class="time-option-title">Expiry Time</div>
+                    <div class="time-option-value">9M</div>
+                    <div class="time-option-yield">Yield 70%</div>
+                </div>
+                <div class="time-option" onclick="selectTimeOption(7, '10M', 90)">
+                    <div class="time-option-title">Expiry Time</div>
+                    <div class="time-option-value">10M</div>
+                    <div class="time-option-yield">Yield 90%</div>
+                </div>
+            </div>
+
+            <div class="order-section-title">Select the investment amount</div>
+            <div class="amount-options">
+                <div class="amount-option" onclick="selectAmountOption(100)">
+                    <div class="amount-option-value">100</div>
+                    <div class="amount-option-label">USDT</div>
+                </div>
+                <div class="amount-option" onclick="selectAmountOption(500)">
+                    <div class="amount-option-value">500</div>
+                    <div class="amount-option-label">USDT</div>
+                </div>
+                <div class="amount-option" onclick="selectAmountOption(1000)">
+                    <div class="amount-option-value">1000</div>
+                    <div class="amount-option-label">USDT</div>
+                </div>
+                <div class="amount-option" onclick="selectAmountOption(2000)">
+                    <div class="amount-option-value">2000</div>
+                    <div class="amount-option-label">USDT</div>
+                </div>
+                <div class="amount-option" onclick="selectAmountOption(5000)">
+                    <div class="amount-option-value">5000</div>
+                    <div class="amount-option-label">USDT</div>
+                </div>
+                <div class="amount-option" onclick="selectAmountOption(10000)">
+                    <div class="amount-option-value">10000</div>
+                    <div class="amount-option-label">USDT</div>
+                </div>
+                <div class="amount-option" onclick="selectAmountOption(100000)">
+                    <div class="amount-option-value">100000</div>
+                    <div class="amount-option-label">USDT</div>
+                </div>
+            </div>
+
+            <div class="order-section-title">Custom amount</div>
+            <input type="number" class="custom-amount-input" id="customAmountInput" placeholder="Enter amount in USDT" oninput="updateCustomAmount()">
+
+            <div class="order-section-title">Account balance: <span id="accountBalanceDisplay">25,430.00 USDT</span></div>
+
+            <div class="order-summary">
+                <div class="order-summary-item">
+                    <div class="order-summary-label">Trading pair</div>
+                    <div class="order-summary-value" id="summaryPair">BTC/USDT</div>
+                </div>
+                <div class="order-summary-item">
+                    <div class="order-summary-label">Direction</div>
+                    <div class="order-summary-value" id="summaryDirection">Buy Up</div>
+                </div>
+                <div class="order-summary-item">
+                    <div class="order-summary-label">Current price</div>
+                    <div class="order-summary-value" id="summaryPrice">102830.59</div>
+                </div>
+                <div class="order-summary-item">
+                    <div class="order-summary-label">Amount</div>
+                    <div class="order-summary-value" id="summaryAmount">0 USDT</div>
+                </div>
+            </div>
+
+            <button class="order-confirm-btn" id="confirmOrderBtn" onclick="confirmOrder()" disabled>Confirm Order</button>
+        </div>
+    </div>
+
+    <!-- Countdown Modal -->
+    <div class="modal-overlay" id="countdownModalOverlay"></div>
+    <div class="countdown-modal" id="countdownModal">
+        <div class="countdown-header">BTC/USDT</div>
+        <div class="countdown-price" id="countdownPrice">103274</div>
+        <div class="countdown-type" id="countdownType">Buy Up</div>
+        <div class="countdown-amount" id="countdownAmount">50.00 USDT</div>
+        <div class="countdown-timer" id="countdownTimer">1:00</div>
+        <button class="countdown-confirm-btn" id="countdownConfirmBtn" onclick="completeTrade()" disabled>Confirm Trade</button>
+    </div>
+
+    <!-- Footer Navigation -->
+    <div class="footer-nav">
+        <a href="./trade.html">
+            <button class="trade-simple">Trade</button>
+        </a>
+        <a href="./market.html">
+            <div style="background: #1f2633; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#e74f4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 17l6-6 4 4 8-8" />
+                    <circle cx="3" cy="17" r="1.5" fill="#00BFFF"/>
+                    <circle cx="9" cy="11" r="1.5" fill="#00BFFF"/>
+                    <circle cx="13" cy="15" r="1.5" fill="#00BFFF"/>
+                    <circle cx="21" cy="7" r="1.5" fill="#e74f4f"/>
+                </svg>
+            </div>
+        </a>
+        <a href="./mining.html" class="trade">
+            <img src="./images/gear.png" alt="Mining Machine">
+        </a>
+        <a href="./notifications.html">
+            <div style="background: #1f2633; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0096FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                </svg>
+            </div>
+        </a>
+    </div>
+
+    <script>
+        
+        // ===== Loading System =====
+class LoadingSystem {
+  constructor() {
+    this.minLoadingTime = 1500; // Minimum loading time in ms
+    this.maxLoadingTime = 3000; // Maximum loading time in ms
+    this.startTime = null;
+    this.loadingPhases = [
+      { progress: 20, text: "Loading security modules..." },
+      { progress: 40, text: "Initializing wallet services..." },
+      { progress: 60, text: "Syncing with blockchain..." },
+      { progress: 80, text: "Finalizing setup..." },
+      { progress: 95, text: "Ready to go!" }
+    ];
+  }
+
+  init() {
+    this.startTime = Date.now();
+    this.setupLoadingBar();
+    this.setupEventListeners();
+    this.simulateLoading();
+  }
+
+  setupLoadingBar() {
+    const progressBar = document.getElementById('loadingProgress');
+    progressBar.style.transition = `width ${this.minLoadingTime/1000}s ease`;
+  }
+
+  setupEventListeners() {
+    window.addEventListener('load', () => this.completeLoading());
+    setTimeout(() => this.completeLoading(), this.maxLoadingTime);
+  }
+
+  simulateLoading() {
+    let currentPhase = 0;
+    const phaseInterval = setInterval(() => {
+      if (currentPhase >= this.loadingPhases.length) {
+        clearInterval(phaseInterval);
+        return;
+      }
+      const phase = this.loadingPhases[currentPhase];
+      this.updateProgress(phase.progress, phase.text);
+      currentPhase++;
+    }, this.minLoadingTime / this.loadingPhases.length);
+  }
+
+  updateProgress(percent, text) {
+    document.getElementById('loadingProgress').style.width = `${percent}%`;
+    if (text) document.getElementById('loadingText').textContent = text;
+  }
+
+  completeLoading() {
+    const elapsed = Date.now() - this.startTime;
+    const remainingTime = Math.max(0, this.minLoadingTime - elapsed);
+    
+    setTimeout(() => {
+      this.updateProgress(100, "Ready!");
+      setTimeout(() => {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        document.body.classList.add('page-loaded');
+        document.querySelectorAll('button, a, input').forEach(el => {
+          el.style.pointerEvents = 'auto';
+        });
+      }, 300);
+    }, remainingTime);
+  }
+}
+
+// Initialize loading system
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('button, a, input').forEach(el => {
+    el.style.pointerEvents = 'none';
+  });
+  new LoadingSystem().init();
+});
+
+// Enhanced page navigation
+function navigateWithTransition(url) {
+  document.body.classList.remove('page-loaded');
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  document.getElementById('loadingProgress').style.width = '0%';
+  new LoadingSystem().init();
+  setTimeout(() => {
+    window.location.href = url;
+  }, 300);
+}
+        // Constants for localStorage keys
+        const ACTIVE_TRADES_KEY = 'cryptonet-active-trades';
+        const ASSETS_KEY = 'cryptonetAssets';
+        const RECENT_TRADES_KEY = 'cryptonet-recent-trades';
+
+        // Initialize TradingView Widget
+        function initTradingView(symbol = "BINANCE:BTCUSDT") {
+            return new TradingView.widget({
+                "autosize": true,
+                "symbol": symbol,
+                "interval": "15",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#0d1117",
+                "enable_publishing": false,
+                "hide_side_toolbar": false,
+                "container_id": "tradingview",
+                "allow_symbol_change": false
+            });
+        }
+
+        // Initialize the chart
+        let tradingViewWidget = initTradingView();
+
+        // Initialize Particles
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: "#0096ff" },
+                shape: { type: "circle" },
+                opacity: { value: 0.3, random: true },
+                size: { value: 3, random: true },
+                move: {
+                    enable: true,
+                    speed: 1.5,
+                    direction: "none",
+                    random: false,
+                    straight: false,
+                    out_mode: "out",
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "repulse" },
+                    onclick: { enable: true, mode: "push" },
+                    resize: true
+                }
+            }
+        });
+
+        // Load assets from localStorage or initialize
+        function loadAssets() {
+            const savedAssets = localStorage.getItem(ASSETS_KEY);
+            if (savedAssets) {
+                return JSON.parse(savedAssets);
+            }
+            return {
+                USDT: { available: 1050, price: 1 },
+                BTC: { available: 0.234, price: 0 },
+                ETH: { available: 1.5, price: 0 },
+                TRX: { available: 5000, price: 0 }
+            };
+        }
+
+        // Save assets to localStorage and trigger sync
+        function saveAssets(assets) {
+            localStorage.setItem(ASSETS_KEY, JSON.stringify(assets));
+            window.dispatchEvent(new Event('storage'));
+        }
+
+        // Load active trades from localStorage
+        function loadActiveTrades() {
+            const savedTrades = localStorage.getItem(ACTIVE_TRADES_KEY);
+            return savedTrades ? JSON.parse(savedTrades) : [];
+        }
+
+        // Save active trades to localStorage
+        function saveActiveTrades(trades) {
+            localStorage.setItem(ACTIVE_TRADES_KEY, JSON.stringify(trades));
+        }
+
+        // Load recent trades from localStorage
+        function loadRecentTrades() {
+            const savedTrades = localStorage.getItem(RECENT_TRADES_KEY);
+            return savedTrades ? JSON.parse(savedTrades) : [
+                { type: 'buy', amount: 250, time: '2 mins ago', profit: 12.50 },
+                { type: 'sell', amount: 150, time: '5 mins ago', profit: -7.50 },
+                { type: 'buy', amount: 180, time: '12 mins ago', profit: 9.00 },
+                { type: 'sell', amount: 320, time: '25 mins ago', profit: -16.00 },
+                { type: 'buy', amount: 110, time: '42 mins ago', profit: 5.50 }
+            ];
+        }
+
+        // Save recent trades to localStorage
+        function saveRecentTrades(trades) {
+            localStorage.setItem(RECENT_TRADES_KEY, JSON.stringify(trades));
+        }
+
+        // Check for completed trades when page loads
+        function checkCompletedTrades() {
+            const activeTrades = loadActiveTrades();
+            const now = Date.now();
+            let updated = false;
+            let completedTrades = [];
+            
+            const remainingTrades = activeTrades.filter(trade => {
+                if (trade.endTime <= now) {
+                    // Trade completed - add profits
+                    const profit = trade.amount * (1 + trade.profitPercentage/100);
+                    const assets = loadAssets();
+                    assets.USDT.available += profit;
+                    saveAssets(assets);
+                    
+                    // Add to completed trades for recent trades list
+                    completedTrades.push({
+                        type: trade.direction,
+                        amount: trade.amount,
+                        time: 'Just now',
+                        profit: trade.amount * (trade.profitPercentage/100)
+                    });
+                    
+                    updated = true;
+                    return false;
+                }
+                return true;
+            });
+            
+            if (updated) {
+                saveActiveTrades(remainingTrades);
+                
+                // Add completed trades to recent trades
+                if (completedTrades.length > 0) {
+                    const recentTrades = loadRecentTrades();
+                    completedTrades.forEach(trade => {
+                        recentTrades.unshift(trade);
+                        if (recentTrades.length > 10) {
+                            recentTrades.pop();
+                        }
+                    });
+                    saveRecentTrades(recentTrades);
+                    renderRecentTrades();
+                }
+                
+                updateBalanceDisplay();
+            }
+        }
+
+        // User balance and trade history
+        let assets = loadAssets();
+        let recentTrades = loadRecentTrades();
+
+        // Order modal state
+        let currentOrder = {
+            direction: 'buy',
+            pair: 'BTC/USDT',
+            timeOption: null,
+            timeValue: '',
+            yieldPercentage: 0,
+            amount: 0,
+            price: '102830.59'
+        };
+
+        // Countdown state
+        let countdownInterval;
+        let countdownSeconds;
+        let tradePending = false;
+
+        // DOM Elements
+        const recentTradesIcon = document.getElementById('recentTradesIcon');
+        const recentTradesPanel = document.getElementById('recentTradesPanel');
+        const contractDropdownBtn = document.getElementById('contractDropdownBtn');
+        const contractOptions = document.getElementById('contractOptions');
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const orderModal = document.getElementById('orderModal');
+        const orderModalOverlay = document.getElementById('orderModalOverlay');
+        const countdownModal = document.getElementById('countdownModal');
+        const countdownModalOverlay = document.getElementById('countdownModalOverlay');
+        const countdownConfirmBtn = document.getElementById('countdownConfirmBtn');
+        const countdownTimer = document.getElementById('countdownTimer');
+        const countdownPrice = document.getElementById('countdownPrice');
+        const countdownType = document.getElementById('countdownType');
+        const countdownAmount = document.getElementById('countdownAmount');
+        const orderModalTitle = document.getElementById('orderModalTitle');
+        const confirmOrderBtn = document.getElementById('confirmOrderBtn');
+        const accountBalanceDisplay = document.getElementById('accountBalanceDisplay');
+        const summaryPair = document.getElementById('summaryPair');
+        const summaryDirection = document.getElementById('summaryDirection');
+        const summaryPrice = document.getElementById('summaryPrice');
+        const summaryAmount = document.getElementById('summaryAmount');
+        const customAmountInput = document.getElementById('customAmountInput');
+
+        // Update balance display
+        function updateBalanceDisplay() {
+            assets = loadAssets();
+            const usdtBalance = assets.USDT.available;
+            balanceDisplay.textContent = `$${usdtBalance.toFixed(2)}`;
+            accountBalanceDisplay.textContent = `${usdtBalance.toFixed(2)} USDT`;
+        }
+
+        // Toggle Recent Trades Panel
+        function toggleRecentTrades() {
+            recentTradesPanel.classList.toggle('show');
+            document.body.style.overflow = recentTradesPanel.classList.contains('show') ? 'hidden' : '';
+        }
+
+        // Toggle Contract Dropdown
+        function toggleContractDropdown() {
+            contractOptions.classList.toggle('show');
+            document.body.style.overflow = contractOptions.classList.contains('show') ? 'hidden' : '';
+        }
+
+        // Show order modal
+        function showOrderModal(direction) {
+            currentOrder.direction = direction;
+            currentOrder.amount = 0;
+            currentOrder.timeOption = null;
+            
+            // Update modal title and direction
+            orderModalTitle.textContent = `${currentOrder.pair} - ${direction === 'buy' ? 'Buy Up' : 'Sell Down'}`;
+            summaryDirection.textContent = direction === 'buy' ? 'Buy Up' : 'Sell Down';
+            summaryDirection.className = direction === 'buy' ? 'order-summary-value buy' : 'order-summary-value sell';
+            
+            // Reset selections
+            document.querySelectorAll('.time-option').forEach(opt => opt.classList.remove('active'));
+            document.querySelectorAll('.amount-option').forEach(opt => opt.classList.remove('active'));
+            customAmountInput.value = '';
+            summaryAmount.textContent = '0 USDT';
+            confirmOrderBtn.disabled = true;
+            
+            // Show modal
+            orderModal.classList.add('show');
+            orderModalOverlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Hide order modal
+        function hideOrderModal() {
+            orderModal.classList.remove('show');
+            orderModalOverlay.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // Show countdown modal
+        function showCountdownModal() {
+            // Update countdown modal content
+            countdownPrice.textContent = currentOrder.price;
+            countdownType.textContent = currentOrder.direction === 'buy' ? 'Buy Up' : 'Sell Down';
+            countdownType.className = currentOrder.direction === 'buy' ? 'countdown-type' : 'countdown-type sell';
+            countdownAmount.textContent = `${currentOrder.amount.toFixed(2)} USDT`;
+            
+            // Calculate countdown time in seconds (M = minutes)
+            countdownSeconds = parseInt(currentOrder.timeValue) * 60;
+            updateCountdownDisplay();
+            
+            // Disable confirm button until countdown completes
+            countdownConfirmBtn.disabled = true;
+            
+            // Start countdown
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(updateCountdown, 1000);
+            
+            // Show modal
+            countdownModal.classList.add('show');
+            countdownModalOverlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            
+            // Save active trade to localStorage
+            const activeTrades = loadActiveTrades();
+            const endTime = Date.now() + (countdownSeconds * 1000);
+            activeTrades.push({
+                pair: currentOrder.pair,
+                direction: currentOrder.direction,
+                amount: currentOrder.amount,
+                profitPercentage: currentOrder.yieldPercentage,
+                endTime: endTime
+            });
+            saveActiveTrades(activeTrades);
+        }
+
+        // Hide countdown modal
+        function hideCountdownModal() {
+            countdownModal.classList.remove('show');
+            countdownModalOverlay.classList.remove('show');
+            document.body.style.overflow = '';
+            clearInterval(countdownInterval);
+            tradePending = false;
+        }
+
+        // Update countdown display
+        function updateCountdown() {
+            countdownSeconds--;
+            updateCountdownDisplay();
+            
+            if (countdownSeconds <= 0) {
+                clearInterval(countdownInterval);
+                countdownConfirmBtn.disabled = false;
+            }
+        }
+
+        // Update countdown display format
+        function updateCountdownDisplay() {
+            const minutes = Math.floor(countdownSeconds / 60);
+            const seconds = countdownSeconds % 60;
+            countdownTimer.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        // Select time option
+        function selectTimeOption(optionId, timeValue, yieldPercentage) {
+            // Remove active class from all options
+            document.querySelectorAll('.time-option').forEach(opt => opt.classList.remove('active'));
+            
+            // Add active class to selected option
+            document.querySelector(`.time-option:nth-child(${optionId})`).classList.add('active');
+            
+            // Update current order
+            currentOrder.timeOption = optionId;
+            currentOrder.timeValue = timeValue;
+            currentOrder.yieldPercentage = yieldPercentage;
+            
+            // Enable confirm button if amount is selected
+            if (currentOrder.amount > 0) {
+                confirmOrderBtn.disabled = false;
+            }
+        }
+
+        // Select amount option
+        function selectAmountOption(amount) {
+            // Remove active class from all options
+            document.querySelectorAll('.amount-option').forEach(opt => opt.classList.remove('active'));
+            
+            // Add active class to selected option
+            const selectedOption = Array.from(document.querySelectorAll('.amount-option')).find(opt => 
+                parseInt(opt.querySelector('.amount-option-value').textContent) === amount
+            );
+            if (selectedOption) {
+                selectedOption.classList.add('active');
+            }
+            
+            // Clear custom amount input
+            customAmountInput.value = '';
+            
+            // Update current order
+            currentOrder.amount = amount;
+            summaryAmount.textContent = `${amount} USDT`;
+            
+            // Enable confirm button if time option is selected
+            if (currentOrder.timeOption) {
+                confirmOrderBtn.disabled = false;
+            }
+        }
+
+        // Update custom amount
+        function updateCustomAmount() {
+            const amount = parseFloat(customAmountInput.value) || 0;
+            
+            // Remove active class from all amount options
+            document.querySelectorAll('.amount-option').forEach(opt => opt.classList.remove('active'));
+            
+            // Update current order
+            currentOrder.amount = amount;
+            summaryAmount.textContent = `${amount} USDT`;
+            
+            // Enable confirm button if time option is selected and amount is valid
+            if (currentOrder.timeOption && amount > 0) {
+                confirmOrderBtn.disabled = false;
+            } else {
+                confirmOrderBtn.disabled = true;
+            }
+        }
+
+        // Confirm order
+        function confirmOrder() {
+            assets = loadAssets();
+            if (currentOrder.amount > assets.USDT.available) {
+                alert('Insufficient balance for this trade');
+                return;
+            }
+            
+            // Deduct amount from balance
+            assets.USDT.available -= currentOrder.amount;
+            saveAssets(assets);
+            updateBalanceDisplay();
+            
+            // Show countdown modal
+            showCountdownModal();
+            
+            // Hide order modal
+            hideOrderModal();
+            
+            // Set trade as pending
+            tradePending = true;
+            
+            // Show initial confirmation
+            const confirmationMsg = document.createElement('div');
+            confirmationMsg.textContent = `Order placed: ${currentOrder.direction.toUpperCase()} $${currentOrder.amount.toFixed(2)} for ${currentOrder.timeValue}`;
+            confirmationMsg.style.position = 'fixed';
+            confirmationMsg.style.bottom = '100px';
+            confirmationMsg.style.left = '50%';
+            confirmationMsg.style.transform = 'translateX(-50%)';
+            confirmationMsg.style.backgroundColor = currentOrder.direction === 'buy' ? 'var(--success)' : 'var(--danger)';
+            confirmationMsg.style.color = 'white';
+            confirmationMsg.style.padding = '12px 24px';
+            confirmationMsg.style.borderRadius = '8px';
+            confirmationMsg.style.zIndex = '2000';
+            confirmationMsg.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+            confirmationMsg.style.animation = 'fadeInOut 3s forwards';
+            
+            document.body.appendChild(confirmationMsg);
+            
+            setTimeout(() => {
+                document.body.removeChild(confirmationMsg);
+            }, 3000);
+        }
+
+        // Complete trade (after countdown)
+        function completeTrade() {
+            if (!tradePending) return;
+            
+            assets = loadAssets();
+            // Calculate profit
+            const profit = (currentOrder.amount * currentOrder.yieldPercentage) / 100;
+            assets.USDT.available += currentOrder.amount + profit;
+            saveAssets(assets);
+            updateBalanceDisplay();
+            
+            // Add to recent trades
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            recentTrades.unshift({
+                type: currentOrder.direction,
+                amount: currentOrder.amount,
+                time: timeStr,
+                profit: profit
+            });
+            
+            // Keep only last 10 trades
+            if (recentTrades.length > 10) {
+                recentTrades.pop();
+            }
+            
+            // Save recent trades
+            saveRecentTrades(recentTrades);
+            
+            // Update the display
+            renderRecentTrades();
+            
+            // Remove from active trades
+            const activeTrades = loadActiveTrades();
+            const updatedTrades = activeTrades.filter(trade => 
+                !(trade.pair === currentOrder.pair && 
+                  trade.direction === currentOrder.direction && 
+                  trade.amount === currentOrder.amount)
+            );
+            saveActiveTrades(updatedTrades);
+            
+            // Hide countdown modal
+            hideCountdownModal();
+            
+            // Show success message
+            const successMsg = document.createElement('div');
+            successMsg.textContent = `Trade completed: ${profit >= 0 ? 'Profit' : 'Loss'} $${Math.abs(profit).toFixed(2)}`;
+            successMsg.style.position = 'fixed';
+            successMsg.style.bottom = '100px';
+            successMsg.style.left = '50%';
+            successMsg.style.transform = 'translateX(-50%)';
+            successMsg.style.backgroundColor = profit >= 0 ? 'var(--success)' : 'var(--danger)';
+            successMsg.style.color = 'white';
+            successMsg.style.padding = '12px 24px';
+            successMsg.style.borderRadius = '8px';
+            successMsg.style.zIndex = '2000';
+            successMsg.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+            successMsg.style.animation = 'fadeInOut 3s forwards';
+            
+            document.body.appendChild(successMsg);
+            
+            setTimeout(() => {
+                document.body.removeChild(successMsg);
+            }, 3000);
+        }
+
+        // Change Contract
+        function changeContract(pair, price, change) {
+            // Update contract title
+            document.querySelector('.contract-title').textContent = `${pair} Quick Contract`;
+            currentOrder.pair = pair;
+            summaryPair.textContent = pair;
+            
+            // Update price display
+            document.getElementById('btcPrice').textContent = `$${price}`;
+            currentOrder.price = price;
+            summaryPrice.textContent = price;
+            
+            // Update change display
+            const changeElement = document.getElementById('btcChange');
+            changeElement.textContent = change;
+            changeElement.className = 'data-value ' + (change.startsWith('+') ? 'success' : 'danger');
+            
+            // Close dropdown
+            contractOptions.classList.remove('show');
+            document.body.style.overflow = '';
+            
+            // Update TradingView chart
+            const symbolMap = {
+                'BTC/USDT': 'BINANCE:BTCUSDT',
+                'ETH/USDT': 'BINANCE:ETHUSDT',
+                'EOS/USDT': 'BINANCE:EOSUSDT',
+                'DOGE/USDT': 'BINANCE:DOGEUSDT',
+                'BCH/USDT': 'BINANCE:BCHUSDT'
+            };
+            
+            if (symbolMap[pair]) {
+                // Remove existing widget
+                document.getElementById('tradingview').innerHTML = '';
+                // Create new widget with the selected symbol
+                tradingViewWidget = initTradingView(symbolMap[pair]);
+            }
+        }
+
+        // Render Recent Trades
+        function renderRecentTrades() {
+            const container = document.getElementById('recent-trades-list');
+            container.innerHTML = '';
+            
+            recentTrades.forEach(trade => {
+                const tradeItem = document.createElement('div');
+                tradeItem.className = 'trade-item';
+                
+                const profitText = trade.profit !== undefined 
+                    ? ` (${trade.profit >= 0 ? '+' : ''}${trade.profit.toFixed(2)})`
+                    : '';
+                
+                tradeItem.innerHTML = `
+                    <div>
+                        <span class="trade-type ${trade.type}">${trade.type.toUpperCase()}</span>
+                        <span class="trade-amount">$${trade.amount}${profitText}</span>
+                    </div>
+                    <span class="trade-time">${trade.time}</span>
+                `;
+                container.appendChild(tradeItem);
+            });
+        }
+
+        // Simulate Price Updates
+        function updatePrice() {
+            const priceElement = document.getElementById('btcPrice');
+            let price = 36500;
+            setInterval(() => {
+                price = price + (Math.random() - 0.5) * 200;
+                priceElement.textContent = `$${price.toFixed(2)}`;
+                currentOrder.price = price.toFixed(2);
+                summaryPrice.textContent = price.toFixed(2);
+                
+                // Update countdown price if modal is open
+                if (countdownModal.classList.contains('show')) {
+                    countdownPrice.textContent = price.toFixed(2);
+                }
+            }, 3000);
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.contract-header') && !event.target.closest('.contract-dropdown')) {
+                contractOptions.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+            if (!event.target.closest('.recent-trades-icon') && !event.target.closest('.recent-trades-panel')) {
+                recentTradesPanel.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Close modals when clicking overlay
+        orderModalOverlay.addEventListener('click', hideOrderModal);
+        countdownModalOverlay.addEventListener('click', hideCountdownModal);
+
+        // Handle touch events for better mobile experience
+        document.addEventListener('touchstart', function() {}, { passive: true });
+
+        // Event Listeners
+        recentTradesIcon.addEventListener('click', toggleRecentTrades);
+        recentTradesIcon.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            toggleRecentTrades();
+        }, { passive: false });
+
+        contractDropdownBtn.addEventListener('click', toggleContractDropdown);
+        contractDropdownBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            toggleContractDropdown();
+        }, { passive: false });
+
+        // Add animation for fade in/out
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize
+        checkCompletedTrades();
+        updateBalanceDisplay();
+        renderRecentTrades();
+        updatePrice();
+
+        // Check for completed trades every minute
+        setInterval(checkCompletedTrades, 60000);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</body>
+</html>

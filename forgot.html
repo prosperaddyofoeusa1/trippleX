@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CryptoNet - Forgot Password</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --primary: #0096FF;
+  --primary-light: #4db8ff;
+  --error: #ff4d4d;
+  --success: #00c853;
+  --bg-dark: #0d1117;
+  --card-bg: rgba(22, 27, 34, 0.95);
+  --text-light: #f0f0f0;
+  --text-gray: #bbbbbb;
+  --input-bg: #1f2633;
+  --input-border: #2e3748;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-light);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-container {
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 24px;
+}
+
+h1 {
+  color: var(--text-light);
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--text-gray);
+  font-size: 14px;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.form-group {
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+label {
+  display: block;
+  color: var(--text-light);
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+input[type="email"] {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text-light);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+input[type="email"]:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 150, 255, 0.2);
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn:hover {
+  background: var(--primary-light);
+}
+
+.btn:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+.loader {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin: 16px 0;
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.success-message {
+  background: rgba(0, 200, 83, 0.1);
+  color: var(--success);
+  border-left: 3px solid var(--success);
+}
+
+.error-message {
+  background: rgba(255, 77, 77, 0.1);
+  color: var(--error);
+  border-left: 3px solid var(--error);
+}
+
+.footer-links {
+  margin-top: 24px;
+  font-size: 14px;
+  color: var(--text-gray);
+}
+
+.footer-links a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.back-btn {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  color: var(--primary);
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  color: var(--primary-light);
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 32px 24px;
+    border-radius: 0;
+    height: 100vh;
+    max-width: 100%;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .back-btn {
+    top: 20px;
+    left: 20px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="login-container">
+  <div class="back-btn" onclick="window.location.href='login.html'">
+    <i class="fas fa-arrow-left"></i>
+  </div>
+  
+  <img src="https://img.icons8.com/fluency/96/000000/bitcoin.png" alt="Logo" class="logo">
+  
+  <h1>Forgot Password</h1>
+  <p class="subtitle">Enter your email address and we'll send you a link to reset your password.</p>
+  
+  <form id="forgotPasswordForm">
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" placeholder="your@email.com" required>
+    </div>
+    
+    <button type="button" id="sendResetLinkBtn" class="btn">
+      <span id="buttonText">Send Reset Link</span>
+      <span id="buttonLoader" class="loader" style="display: none;"></span>
+    </button>
+    
+    <div id="successMessage" class="message success-message">
+      <i class="fas fa-check-circle"></i>
+      <span>Password reset link sent successfully!</span>
+    </div>
+    
+    <div id="errorMessage" class="message error-message">
+      <i class="fas fa-exclamation-circle"></i>
+      <span id="errorText">Please enter a valid email address</span>
+    </div>
+  </form>
+  
+  <div class="footer-links">
+    Remember your password? <a href="login.html">Sign in</a>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const emailInput = document.getElementById('email');
+  const sendBtn = document.getElementById('sendResetLinkBtn');
+  const buttonText = document.getElementById('buttonText');
+  const buttonLoader = document.getElementById('buttonLoader');
+  const successMessage = document.getElementById('successMessage');
+  const errorMessage = document.getElementById('errorMessage');
+  const errorText = document.getElementById('errorText');
+
+  // Email validation
+  function validateEmail(email) {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(email);
+  }
+
+  // Handle form submission
+  sendBtn.addEventListener('click', async function() {
+    const email = emailInput.value.trim();
+    
+    // Hide messages
+    successMessage.style.display = 'none';
+    errorMessage.style.display = 'none';
+    
+    // Validate email
+    if (!validateEmail(email)) {
+      errorText.textContent = "Please enter a valid email address";
+      errorMessage.style.display = 'flex';
+      return;
+    }
+    
+    // Show loading state
+    sendBtn.disabled = true;
+    buttonText.textContent = "Sending...";
+    buttonLoader.style.display = 'block';
+    
+    try {
+      // Make API call to your backend
+      const response = await sendResetLink(email);
+      
+      if (response.success) {
+        successMessage.style.display = 'flex';
+        emailInput.disabled = true;
+        sendBtn.disabled = true;
+        buttonText.textContent = "Link Sent!";
+      } else {
+        errorText.textContent = response.message || "Failed to send reset link";
+        errorMessage.style.display = 'flex';
+      }
+    } catch (error) {
+      errorText.textContent = "Network error. Please try again later.";
+      errorMessage.style.display = 'flex';
+      console.error('Error sending reset link:', error);
+    } finally {
+      if (successMessage.style.display !== 'flex') {
+        sendBtn.disabled = false;
+        buttonText.textContent = "Send Reset Link";
+        buttonLoader.style.display = 'none';
+      }
+    }
+  });
+
+  // Actual API call to your backend
+  function sendResetLink(email) {
+    return fetch('https://trippleexchange.com/send_forgot_password.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email })
+    }).then(res => {
+      if (!res.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return res.json();
+    });
+  }
+});
+</script>
+</body>
+</html>

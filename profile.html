@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tripple Exchange - Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+  
+  /* ===== Loading System ===== */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0d1117;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+.loading-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loading-animation {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 30px;
+}
+
+.loading-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loading-spinner {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 140px;
+  height: 140px;
+  border: 3px solid rgba(0, 150, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: #0096FF;
+  animation: spin 2s linear infinite;
+}
+
+.loading-progress-container {
+  width: 200px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.loading-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #0096FF, #00BFFF);
+  transition: width 0.4s ease;
+}
+
+.loading-text {
+  color: #bbb;
+  font-size: 14px;
+  margin-top: 20px;
+  text-align: center;
+  max-width: 80%;
+}
+
+/* Animation for content after load */
+.content-wrapper {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.page-loaded .content-wrapper {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.9; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.9; }
+}
+    :root {
+      --primary: #0096ff;
+      --primary-light: #00b3ff;
+      --success: #00ff7f;
+      --warning: #f59e0b;
+      --danger: #ff4d4d;
+      --background: #0d1117;
+      --card-bg: #1f2633;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 150, 255, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(0, 179, 255, 0.05) 0%, transparent 20%);
+      line-height: 1.6;
+    }
+
+    .profile-container {
+      max-width: 1000px;
+      margin: 50px auto 100px;
+      padding: 0 25px;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .avatar-container {
+      position: relative;
+    }
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 3px rgba(0,150,255,0.3),
+                  0 5px 15px rgba(0,150,255,0.2);
+    }
+
+    .avatar-edit {
+      position: absolute;
+      bottom: -5px;
+      right: -5px;
+      background: var(--card-bg);
+      border: 2px solid var(--primary);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .avatar-edit:hover {
+      transform: scale(1.1);
+      background: var(--primary);
+    }
+
+    .verification-status {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .verification-badge {
+      background: rgba(0, 255, 127, 0.1);
+      color: var(--success);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+    }
+
+    .credit-score {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+
+    .profile-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card-title {
+      font-size: 18px;
+      margin-bottom: 25px;
+      color: var(--primary-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 14px;
+      background: #2b3242;
+      border: 1px solid #3a4255;
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease, box-shadow 0.2s ease;
+    }
+
+    input:hover, select:hover {
+      border-color: var(--primary-light);
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 150, 255, 0.3);
+    }
+
+    .btn {
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 150, 255, 0.3);
+    }
+
+    .status-badge {
+      padding: 4px 10px 4px 24px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      position: relative;
+    }
+
+    .status-active {
+      background: rgba(0, 255, 127, 0.1);
+      color: var(--success);
+    }
+
+    .status-pending {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+    }
+
+    #avatar-upload {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+    
+    <!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-animation">
+    <img src="./images/logo.png" alt="Loading" class="loading-logo">
+    <div class="loading-spinner"></div>
+  </div>
+  <div class="loading-progress-container">
+    <div class="loading-progress-bar" id="loadingProgress"></div>
+  </div>
+  <div class="loading-text" id="loadingText">Initializing application...</div>
+</div>
+
+<!-- Wrap all your content in this (except loading overlay) -->
+<div class="content-wrapper" id="contentWrapper">
+  <!-- ALL YOUR EXISTING CONTENT GOES HERE -->
+</div>
+  <div class="profile-container">
+    <a href="dashboard.html" class="back-btn">
+      <i class="fas fa-arrow-left"></i>
+    </a>
+    <div class="profile-header">
+      <div class="avatar-container">
+        <div class="avatar" id="avatar-display">
+          <div id="avatar-initials">JD</div>
+          <img id="avatar-image" src="" alt="Profile Picture">
+        </div>
+        <div class="avatar-edit" id="avatar-edit">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </div>
+        <input type="file" id="avatar-upload" accept="image/*">
+      </div>
+      <div class="verification-status">
+        <h1 id="profile-name">John Doe</h1>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <div class="verification-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            Verified Member
+          </div>
+          <div class="credit-score">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"></path>
+            </svg>
+            Credit Score: 85/100
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-grid">
+      <div class="profile-card">
+        <h2 class="card-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          Personal Information
+        </h2>
+
+        <form id="profile-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" name="firstName" value="John">
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" name="lastName" value="Doe">
+            </div>
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" name="dob" value="1985-06-15">
+            </div>
+            <div class="form-group">
+              <label>Nationality</label>
+              <select name="nationality">
+                <option value="US">United States</option>
+                <option value="CA">Canada</option>
+                <option value="UK">United Kingdom</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="JP">Japan</option>
+                <option value="CN">China</option>
+                <option value="IN">India</option>
+                <option value="BR">Brazil</option>
+                <option value="ZA">South Africa</option>
+                <option value="MX">Mexico</option>
+                <option value="RU">Russia</option>
+                <option value="SG">Singapore</option>
+                <option value="AE">United Arab Emirates</option>
+                <option value="KR">South Korea</option>
+                <option value="IT">Italy</option>
+                <option value="ES">Spain</option>
+                <option value="NL">Netherlands</option>
+                <option value="SE">Sweden</option>
+                <option value="CH">Switzerland</option>
+                <option value="NO">Norway</option>
+              </select>
+            </div>
+          </div>
+
+          <h3 class="card-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            Address Information
+          </h3>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Street Address</label>
+              <input type="text" name="street" value="123 Blockchain Blvd">
+            </div>
+            <div class="form-group">
+              <label>Apt/Suite</label>
+              <input type="text" name="apt" placeholder="Optional">
+            </div>
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" name="city" value="Cryptoville">
+            </div>
+            <div class="form-group">
+              <label>State/Province</label>
+              <input type="text" name="state" value="Crypto State">
+            </div>
+            <div class="form-group">
+              <label>Postal Code</label>
+              <input type="text" name="postalCode" value="12345">
+            </div>
+            <div class="form-group">
+              <label>Country</label>
+              <select name="country">
+                <option value="US">United States</option>
+                <option value="CA">Canada</option>
+                <option value="UK">United Kingdom</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="JP">Japan</option>
+                <option value="CN">China</option>
+                <option value="IN">India</option>
+                <option value="BR">Brazil</option>
+                <option value="ZA">South Africa</option>
+                <option value="MX">Mexico</option>
+                <option value="RU">Russia</option>
+                <option value="SG">Singapore</option>
+                <option value="AE">United Arab Emirates</option>
+                <option value="KR">South Korea</option>
+                <option value="IT">Italy</option>
+                <option value="ES">Spain</option>
+                <option value="NL">Netherlands</option>
+                <option value="SE">Sweden</option>
+                <option value="CH">Switzerland</option>
+                <option value="NO">Norway</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+      
+      // ===== Loading System =====
+class LoadingSystem {
+  constructor() {
+    this.minLoadingTime = 1500; // Minimum loading time in ms
+    this.maxLoadingTime = 3000; // Maximum loading time in ms
+    this.startTime = null;
+    this.loadingPhases = [
+      { progress: 20, text: "Loading security modules..." },
+      { progress: 40, text: "Initializing wallet services..." },
+      { progress: 60, text: "Syncing with blockchain..." },
+      { progress: 80, text: "Finalizing setup..." },
+      { progress: 95, text: "Ready to go!" }
+    ];
+  }
+
+  init() {
+    this.startTime = Date.now();
+    this.setupLoadingBar();
+    this.setupEventListeners();
+    this.simulateLoading();
+  }
+
+  setupLoadingBar() {
+    const progressBar = document.getElementById('loadingProgress');
+    progressBar.style.transition = `width ${this.minLoadingTime/1000}s ease`;
+  }
+
+  setupEventListeners() {
+    window.addEventListener('load', () => this.completeLoading());
+    setTimeout(() => this.completeLoading(), this.maxLoadingTime);
+  }
+
+  simulateLoading() {
+    let currentPhase = 0;
+    const phaseInterval = setInterval(() => {
+      if (currentPhase >= this.loadingPhases.length) {
+        clearInterval(phaseInterval);
+        return;
+      }
+      const phase = this.loadingPhases[currentPhase];
+      this.updateProgress(phase.progress, phase.text);
+      currentPhase++;
+    }, this.minLoadingTime / this.loadingPhases.length);
+  }
+
+  updateProgress(percent, text) {
+    document.getElementById('loadingProgress').style.width = `${percent}%`;
+    if (text) document.getElementById('loadingText').textContent = text;
+  }
+
+  completeLoading() {
+    const elapsed = Date.now() - this.startTime;
+    const remainingTime = Math.max(0, this.minLoadingTime - elapsed);
+    
+    setTimeout(() => {
+      this.updateProgress(100, "Ready!");
+      setTimeout(() => {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        document.body.classList.add('page-loaded');
+        document.querySelectorAll('button, a, input').forEach(el => {
+          el.style.pointerEvents = 'auto';
+        });
+      }, 300);
+    }, remainingTime);
+  }
+}
+
+// Initialize loading system
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('button, a, input').forEach(el => {
+    el.style.pointerEvents = 'none';
+  });
+  new LoadingSystem().init();
+});
+
+// Enhanced page navigation
+function navigateWithTransition(url) {
+  document.body.classList.remove('page-loaded');
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  document.getElementById('loadingProgress').style.width = '0%';
+  new LoadingSystem().init();
+  setTimeout(() => {
+    window.location.href = url;
+  }, 300);
+}
+    const syncChannel = new BroadcastChannel('profile-sync');
+    const USER_DATA_KEY = 'cryptonet-profile-v1';
+
+    const userData = JSON.parse(localStorage.getItem(USER_DATA_KEY)) || {
+      firstName: 'John',
+      lastName: 'Doe',
+      street: '123 Blockchain Blvd',
+      city: 'Cryptoville',
+      state: 'Crypto State',
+      postalCode: '12345',
+      country: 'US',
+      nationality: 'US',
+      dob: '1985-06-15',
+      avatar: '',
+      creditScore: 85
+    };
+
+    // Avatar handling
+    const avatarUpload = document.getElementById('avatar-upload');
+    const avatarImage = document.getElementById('avatar-image');
+    const avatarInitials = document.getElementById('avatar-initials');
+
+    function updateAvatar() {
+      if (userData.avatar) {
+        avatarImage.src = userData.avatar;
+        avatarImage.style.display = 'block';
+        avatarInitials.style.display = 'none';
+      } else {
+        avatarImage.style.display = 'none';
+        avatarInitials.style.display = 'flex';
+        avatarInitials.textContent = 
+          `${userData.firstName[0]}${userData.lastName[0]}`;
+      }
+    }
+
+    avatarUpload.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          userData.avatar = event.target.result;
+          syncData();
+          updateAvatar();
+          showToast('Profile picture updated');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById('avatar-display').addEventListener('click', () => avatarUpload.click());
+    document.getElementById('avatar-edit').addEventListener('click', () => avatarUpload.click());
+
+    function syncData() {
+      localStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));
+      syncChannel.postMessage({ type: 'profile-update', data: userData });
+    }
+
+    syncChannel.addEventListener('message', (event) => {
+      if (event.data.type === 'profile-update') {
+        Object.assign(userData, event.data.data);
+        updateFormFields();
+        updateAvatar();
+      }
+    });
+
+    function updateFormFields() {
+      const form = document.getElementById('profile-form');
+      for (const [key, value] of Object.entries(userData)) {
+        if (form.elements[key]) form.elements[key].value = value;
+      }
+      document.getElementById('profile-name').textContent = 
+        `${userData.firstName} ${userData.lastName}`;
+      updateAvatar();
+    }
+
+    document.getElementById('profile-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      for (const [key, value] of formData.entries()) {
+        userData[key] = value;
+      }
+      
+      syncData();
+      showToast('Profile updated across all devices');
+    });
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.style.position = 'fixed';
+      toast.style.bottom = '20px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.backgroundColor = 'var(--card-bg)';
+      toast.style.color = 'white';
+      toast.style.padding = '12px 24px';
+      toast.style.borderRadius = '8px';
+      toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+      toast.style.zIndex = '1000';
+      toast.textContent = message;
+      
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateFormFields();
+      updateAvatar();
+      
+      window.addEventListener('storage', (event) => {
+        if (event.key === USER_DATA_KEY) {
+          Object.assign(userData, JSON.parse(event.newValue));
+          updateFormFields();
+          updateAvatar();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
